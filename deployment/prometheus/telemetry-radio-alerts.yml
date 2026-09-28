@@ -1,0 +1,116 @@
+groups:
+  - name: telemetry-radio-availability
+    rules:
+      - alert: TelemetryRadioTargetDown
+        expr: up{job="telemetry-radio"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Telemetry Radio metrics target is unavailable
+          description: Check the service, host, network path, and metrics endpoint.
+
+      - alert: TelemetryRadioSynchronizationLost
+        expr: telemetry_radio_synchronized == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: Radio synchronization has been lost
+          description: Check master availability, clocks, RF path, and frequency schedule.
+
+      - alert: TelemetryRadioRepeatedSynchronizationLoss
+        expr: increase(telemetry_radio_synchronization_losses[15m]) > 2
+        labels:
+          severity: warning
+        annotations:
+          summary: Radio repeatedly loses synchronization
+          description: More than two synchronization losses occurred in 15 minutes.
+
+  - name: telemetry-radio-security
+    rules:
+      - alert: TelemetryRadioAuthenticationFailure
+        expr: increase(telemetry_radio_authentication_failures[5m]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: Authenticated radio traffic was rejected
+          description: Investigate key mismatch, corruption, or potentially forged traffic.
+
+      - alert: TelemetryRadioRepeatedAuthenticationFailures
+        expr: increase(telemetry_radio_authentication_failures[5m]) > 5
+        labels:
+          severity: critical
+        annotations:
+          summary: Repeated authentication failures detected
+          description: More than five authentication failures occurred in five minutes.
+
+      - alert: TelemetryRadioReplayRejected
+        expr: increase(telemetry_radio_replay_rejections[5m]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: Replayed or stale authenticated traffic was rejected
+          description: Correlate with restarts, session IDs, and the replay-state journal.
+
+  - name: telemetry-radio-link-quality
+    rules:
+      - alert: TelemetryRadioHighRetryRatio
+        expr: increase(telemetry_radio_retries[10m]) / clamp_min(increase(telemetry_radio_packets_transmitted[10m]), 1) > 0.20 and increase(telemetry_radio_packets_transmitted[10m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: More than 20 percent of transmissions are retries
+          description: Inspect signal level, interference, collision rate, and peer availability.
+
+      - alert: TelemetryRadioUncorrectableFrames
+        expr: increase(telemetry_radio_fec_uncorrectable_frames[10m]) > 5
+        labels:
+          severity: warning
+        annotations:
+          summary: Uncorrectable FEC frames exceed the initial operational threshold
+          description: More than five uncorrectable frames occurred in ten minutes.
+
+      - alert: TelemetryRadioQueuePressure
+        expr: telemetry_radio_queue_depth / clamp_min(telemetry_radio_queue_capacity, 1) > 0.75
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Radio transmit queue is above 75 percent capacity
+          description: Check RF airtime, rate limiting, retries, and MAVLink input volume.
+
+      - alert: TelemetryRadioQueueNearlyFull
+        expr: telemetry_radio_queue_depth / clamp_min(telemetry_radio_queue_capacity, 1) > 0.95
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Radio transmit queue is above 95 percent capacity
+          description: Command or telemetry traffic may be dropped imminently.
+
+      - alert: TelemetryRadioQueueDrops
+        expr: increase(telemetry_radio_queue_drops[5m]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: Radio packets were dropped because of queue pressure
+          description: Determine affected priority and reduce load or restore link capacity.
+
+      - alert: TelemetryRadioLowSignalPower
+        expr: telemetry_radio_estimated_signal_power > 0 and telemetry_radio_estimated_signal_power < 0.000001
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: Estimated signal power is below the starter threshold
+          description: Calibrate this threshold for the SDR and bench-tested link margin.
+
+      - alert: TelemetryRadioTransmitError
+        expr: increase(telemetry_radio_transmit_errors[5m]) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: The SDR rejected a transmission
+          description: Check SDR USB state, driver logs, stream state, and power stability.

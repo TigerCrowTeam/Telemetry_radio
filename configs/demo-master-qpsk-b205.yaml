@@ -1,0 +1,104 @@
+role: master
+node_id: 1
+relay_enabled: true
+
+authentication:
+  private_key_file: /home/master/.config/telemetry-radio/keys/node1-conducted-v1-private.pem
+  public_key_files:
+    1: /home/master/.config/telemetry-radio/keys/node1-conducted-v1-public.pem
+    255: /home/master/.config/telemetry-radio/keys/node255-conducted-v1-public.pem
+  replay_state_file: /home/master/.config/telemetry-radio/replay-state.json
+
+# Telemetry Radio v1.0 conducted-link configuration.
+mavlink:
+  connection: /dev/serial/by-id/usb-CubePilot_CubeOrange+_330030000751333233343437-if00
+  baud: 115200
+  orientation_stream_rate_hz: 20
+  target_system: 1
+  target_component: 1
+
+sdr:
+  device:
+    driver: uhd
+    serial: "3457464"
+  sample_rate: 2000000
+  bandwidth: 1000000
+  tx_gain: 50
+  rx_gain: 40
+  tx_antenna: TX/RX
+  rx_antenna: RX2
+  channel: 0
+  samples_per_symbol: 4
+  modulation: qpsk
+  bit_repetitions: 1
+  rs_parity_bytes: 16
+  fec_interleaver_depth: 16
+  decoder_worker_enabled: false
+  decoder_output_batches: 1024
+  open_retry_attempts: 8
+  open_retry_seconds: 1.0
+
+frequency:
+  # Both endpoints derive the same channel from UTC and this ordered list.
+  frequencies_hz: [900000000, 920000000, 940000000, 960000000, 980000000, 1000000000]
+  epoch: 1767225600
+  sequence_mode: ping_pong
+  timed_tuning: false
+  tune_lead_seconds: 0.20
+  interval_seconds: 0.25
+  # Suppress bursts briefly on both sides of a boundary while the B205 retunes.
+  guard_seconds: 0.02
+  reacquire_dwell_seconds: 0.10
+  sync_loss_seconds: 15.0
+
+link:
+  ack_timeout_seconds: 0.6
+  max_retries: 8
+  duplicate_window_seconds: 30.0
+  channel_busy_threshold: 0.02
+  backoff_min_seconds: 0.01
+  backoff_max_seconds: 0.08
+  queue_size: 256
+  reserved_high_priority_slots: 32
+  telemetry_rate_bytes_per_second: 8000
+  telemetry_burst_bytes: 2048
+  bulk_rate_bytes_per_second: 100
+  bulk_burst_bytes: 256
+  low_priority_max_age_seconds: 1
+  coalesce_telemetry: true
+  tdd_period_seconds: 0.10
+  tdd_guard_seconds: 0.01
+  tdd_inter_burst_seconds: 0.005
+  tdd_master_bursts_per_slot: 4
+  tdd_gcs_bursts_per_slot: 2
+  tdd_staggered_windows: true
+  tdd_receive_delay_compensation_seconds: 0.0
+  hardware_timed_io: true
+  hardware_timed_tx_lead_seconds: 0.003
+  hardware_sync_tx_lead_seconds: 0.010
+  hardware_clock_sync: true
+  hardware_epoch_lead_seconds: 2.0
+  hardware_slot_scheduling: true
+  hardware_slot_lookahead_seconds: 0.015
+  hardware_slot_submission_margin_seconds: 0.003
+  mavlink_bundle_max_frames: 1
+  mavlink_bundle_max_bytes: 300
+  mavlink_drain_max_frames: 32
+  replaceable_max_age_seconds: 0.15
+  quaternion_fallback_seconds: 0.5
+  orientation_pacing_seconds: 0.0
+  orientation_control_cycle_interval: 0
+  gcs_request_min_interval_seconds: 0.1
+  flight_controller_heartbeat_repetitions: 1
+
+routing:
+  relay_via_master: true
+  mavlink_system_to_node:
+    1: 1
+
+status:
+  output: text
+  interval_seconds: 2
+  http_enabled: true
+  http_host: 127.0.0.1
+  http_port: 8765

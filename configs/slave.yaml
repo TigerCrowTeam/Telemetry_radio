@@ -1,0 +1,47 @@
+role: slave
+node_id: 2
+authentication:
+  private_key_file: /etc/telemetry-radio/keys/slave2-private.pem
+  public_key_files:
+    1: /etc/telemetry-radio/keys/master-public.pem
+    2: /etc/telemetry-radio/keys/slave2-public.pem
+    255: /etc/telemetry-radio/keys/gcs-public.pem
+  replay_state_file: /var/lib/telemetry-radio/slave2-replay-state.json
+mavlink:
+  connection: /dev/ttyACM0
+  baud: 115200
+sdr:
+  device: {}  # SoapySDR auto-detect
+frequency:
+  frequencies_hz: [905000000, 915000000, 925000000]
+  epoch: 1767225600
+  interval_seconds: 300
+  guard_seconds: 0.25
+  reacquire_dwell_seconds: 1.0
+  sync_loss_seconds: 15.0
+link:
+  ack_timeout_seconds: 0.6
+  max_retries: 4
+  duplicate_window_seconds: 30.0
+  channel_busy_threshold: 0.02
+  backoff_min_seconds: 0.01
+  backoff_max_seconds: 0.08
+  queue_size: 256
+  reserved_high_priority_slots: 32
+  telemetry_rate_bytes_per_second: 6000
+  telemetry_burst_bytes: 8192
+  bulk_rate_bytes_per_second: 1000
+  bulk_burst_bytes: 8192
+  low_priority_max_age_seconds: 5
+  coalesce_telemetry: true
+routing:
+  relay_via_master: true
+  mavlink_system_to_node:
+    1: 1
+    2: 2
+status:
+  output: text
+  interval_seconds: 10
+  http_enabled: true
+  http_host: 127.0.0.1
+  http_port: 8765

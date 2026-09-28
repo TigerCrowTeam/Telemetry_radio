@@ -1,0 +1,34 @@
+[Unit]
+Description=Telemetry Radio node (%i)
+Documentation=https://gitlab.com/tigercrowteam-group/telemetry-radio
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=telemetry-radio
+Group=telemetry-radio
+WorkingDirectory=/opt/telemetry-radio
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=-/etc/default/telemetry-radio
+StateDirectory=telemetry-radio
+UMask=0027
+ExecStart=/opt/telemetry-radio/.venv/bin/telemetry-radio --config /etc/telemetry-radio/%i.yaml $TELEMETRY_RADIO_ARGS
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=15
+KillSignal=SIGTERM
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=telemetry-radio-%i
+
+# The process needs access to its serial and SDR devices but not writable system files.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

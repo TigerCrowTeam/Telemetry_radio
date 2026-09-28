@@ -1,0 +1,3 @@
+# Optional arguments appended to every telemetry-radio systemd instance.
+# Per-node settings should normally remain in /etc/telemetry-radio/<instance>.yaml.
+TELEMETRY_RADIO_ARGS=
